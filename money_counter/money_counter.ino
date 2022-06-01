@@ -80,20 +80,15 @@ void loop() {
    if (detectedBill == 1) {
       Serial.println("am detectat");
       start = 1;
-      delay(2000);
+      delay(1500);
       readColorsFromSensor();
       detectBill();
-      delay(1000);
       detectedBill = 0;  
    }
 
    if (detectedBill == 0 && start == 1) {
-//       Serial.println("scriu totalul");
        total += billValue;
        billValue = 0;
-//       Serial.print("totalul e ");
-//       Serial.println(total);
-       
        writeOnDisplayTotal();
        delay(1500);  
    }
@@ -156,13 +151,28 @@ void detectBill() {
  Serial.println();
 
 // 10 euro
- if (   40 <= redFrequency && redFrequency < 70
-    &&  75 < greenFrequency && greenFrequency < 105 
-    &&  75 < blueFrequency && blueFrequency < 100
+ if (   25 <= redFrequency && redFrequency <= 35
+    &&  50 <= greenFrequency && greenFrequency < 60
+    &&  50 <= blueFrequency && blueFrequency <= 60
     ) {
    billValue = 10;
    Serial.println("10 euro");
  }
+ else if (  30 <= redFrequency && redFrequency < 40
+    &&  35 <= greenFrequency && greenFrequency < 45 
+    &&  35 <= blueFrequency && blueFrequency < 45) {
+    billValue = 20;
+    Serial.println("20 euro");
+ }
+ else if (  25 <= redFrequency && redFrequency <= 35
+    &&  35 <= greenFrequency && greenFrequency <= 45 
+    &&  40 < blueFrequency && blueFrequency <= 50) {
+    billValue = 50;
+    Serial.println("50 euro");
+ } else {
+    billValue = 0;
+    Serial.println("Unknown");
+  }
 
 }
 
