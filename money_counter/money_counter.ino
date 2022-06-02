@@ -52,6 +52,7 @@ void setup() {
    pinMode(out, INPUT);
    pinMode(prox,INPUT);
    pinMode(Button, INPUT_PULLUP);
+//   attachInterrupt(digitalPinToInterrupt(Button), pin_ISR, CHANGE);
    
   Serial.begin(9600);//begin serial communication
    
@@ -62,8 +63,8 @@ void setup() {
   // intreruperi
   cli();
 
-  PCICR |= (1 << PCIE2);
-  PCMSK2 |= (1 << PCINT22);
+  PCICR |= (1 << PCIE1);
+  PCMSK1 |= (1 << PCINT1);
 
   sei(); 
 }
@@ -94,6 +95,15 @@ void loop() {
        delay(1500);  
    }
 
+}
+
+void pin_ISR()
+{
+  int reading = digitalRead(Button);
+  if (reading != lastButtonState) {
+    Serial.println(reading);
+    reset();
+  }
 }
 
 void checkProximitySensor() {
