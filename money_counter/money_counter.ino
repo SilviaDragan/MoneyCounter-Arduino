@@ -41,8 +41,7 @@ int billValue = 0;
 
 void setup() {
   Wire.begin();
-  // activează întreruperile
-  sei();
+
   display.begin();
 
   //Declarations:
@@ -52,29 +51,25 @@ void setup() {
    pinMode(S3, OUTPUT);
    pinMode(out, INPUT);
    pinMode(prox,INPUT);
-   
-   
    pinMode(Button, INPUT_PULLUP);
-//  cli();
    
   Serial.begin(9600);//begin serial communication
    
   digitalWrite(S0,HIGH); //Putting S0/S1 on HIGH/HIGH levels means the output frequency scalling is at 100% (recommended)
   digitalWrite(S1,LOW); //LOW/LOW is off HIGH/LOW is 20% and LOW/HIGH is  2%
 
-//  sei();
-  lastButtonState = digitalRead(Button);
-//  reset = o; 
+
+  // intreruperi
+  cli();
+
+  PCICR |= (1 << PCIE2);
+  PCMSK2 |= (1 << PCINT22);
+
+  sei(); 
 }
 
 void loop() {
   display.display();
-
-  int reading = digitalRead(Button);
-  if (reading != lastButtonState) {
-    Serial.println(reading);
-    reset();
-  }
   
   if (start == 0) {
    Serial.println("start");
@@ -153,7 +148,6 @@ void detectBill() {
  Serial.print(blueFrequency);
  Serial.println();
 
-// 10 euro
  if (   25 <= redFrequency && redFrequency <= 35
     &&  50 <= greenFrequency && greenFrequency < 65
     &&  50 <= blueFrequency && blueFrequency <= 66
@@ -221,28 +215,10 @@ void reset(){
   blueFrequency = 0;
 }
 
-void isr_btn(){
-//   int reading = digitalRead(Button);
-//    if (reading != lastButtonState) {
-//    ledState = !ledState;
-//    digitalWrite(LED, ledState);
-//    if (prescaler_val == 0) {
-//      TCCR1B = 0;
-//      TCCR1B |= (1 << WGM12);   // CTC mode
-//      TCCR1B |= (1 << CS10);
-//      prescaler_val +=1;
-//    }
-//    if (prescaler_val == 1) {
-//      TCCR1B = 0;
-//      TCCR1B |= (1 << WGM12);   // CTC mode
-//      TCCR1B |= (1 << CS11);
-//      prescaler_val +=1;
-//    }
-//    if (prescaler_val == 2) {
-//      TCCR1B = 0;
-//      TCCR1B |= (1 << WGM12);   // CTC mode
-//      TCCR1B |= (1 << CS12);
-//      prescaler_val = 0;
-//    }
-//   i=9;
+ISR(PCINT2_vect) {
+  int reading = digitalRead(Button);
+  if (reading != lastButtonState) {
+    Serial.println(reading);
+    reset();
+  }
 }
