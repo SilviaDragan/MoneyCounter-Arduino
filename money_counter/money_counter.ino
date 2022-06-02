@@ -10,47 +10,39 @@
 #define S1 3
 #define S2 4
 #define S3 5
-#define out 6
-#define prox 8
+#define out 6 // out pin on color sensor
+#define prox 8 // proximity sensor pin
+
 
 #define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin)
 #define SCREEN_ADDRESS 0x3C ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+
+int buttonState;             // valoarea starii butonului
+int lastButtonState = HIGH;   // valoarea anterioara a starii butonului
+unsigned const int Button = 9;
+
 
 // Output from the color sensor
 int redFrequency = 0;
 int greenFrequency = 0;
 int blueFrequency = 0;
 
-//Formatted color values:
-int redColor = 0;
-int greenColor = 0;
-int blueColor = 0;
-
-//Values used for calibration
-int redMin;
-int redMax;
-int greenMin;
-int greenMax;
-int blueMin;
-int blueMax;
-
 int inputVal = 0;
-
-int Red=0, Blue=0, Green=0;  //RGB values 
 
 // total money counted
 int total = 0;
 int color = 0;
 int start = 0;
 
-
 int detectedBill = 0;
 int billValue = 0;
 
 void setup() {
   Wire.begin();
-
+  // activează întreruperile
+  sei();
   display.begin();
 
   //Declarations:
@@ -59,16 +51,30 @@ void setup() {
    pinMode(S2, OUTPUT);
    pinMode(S3, OUTPUT);
    pinMode(out, INPUT);
-   pinMode(prox,INPUT);    //Pin 8 is connected to the output of proximity sensor
-
-   Serial.begin(9600);//begin serial communication
+   pinMode(prox,INPUT);
    
-   digitalWrite(S0,HIGH); //Putting S0/S1 on HIGH/HIGH levels means the output frequency scalling is at 100% (recommended)
-   digitalWrite(S1,LOW); //LOW/LOW is off HIGH/LOW is 20% and LOW/HIGH is  2%
+   
+   pinMode(Button, INPUT_PULLUP);
+//  cli();
+   
+  Serial.begin(9600);//begin serial communication
+   
+  digitalWrite(S0,HIGH); //Putting S0/S1 on HIGH/HIGH levels means the output frequency scalling is at 100% (recommended)
+  digitalWrite(S1,LOW); //LOW/LOW is off HIGH/LOW is 20% and LOW/HIGH is  2%
+
+//  sei();
+  lastButtonState = digitalRead(Button);
+//  reset = o; 
 }
 
 void loop() {
   display.display();
+
+  int reading = digitalRead(Button);
+  if (reading != lastButtonState) {
+    Serial.println(reading);
+    reset();
+  }
   
   if (start == 0) {
    Serial.println("start");
@@ -93,7 +99,6 @@ void loop() {
        delay(1500);  
    }
 
-//  printColors();
 }
 
 void checkProximitySensor() {
@@ -124,14 +129,12 @@ void readColorsFromSensor() {
  digitalWrite(S2, LOW);
  digitalWrite(S3, LOW);
  redFrequency = pulseIn(out, digitalRead(out) == HIGH ? LOW : HIGH);
-// redColor = map(redFrequency, redMin, redMax, 255, 0);
  delay(100);
 
  //green:
  digitalWrite(S2, HIGH);
  digitalWrite(S3, HIGH);
  greenFrequency = pulseIn(out,  digitalRead(out) == HIGH ? LOW : HIGH);
-// greenColor = map(greenFrequency, greenMin, greenMax, 255, 0);
  delay(100);
 
  //blue:
@@ -152,8 +155,8 @@ void detectBill() {
 
 // 10 euro
  if (   25 <= redFrequency && redFrequency <= 35
-    &&  50 <= greenFrequency && greenFrequency < 60
-    &&  50 <= blueFrequency && blueFrequency <= 60
+    &&  50 <= greenFrequency && greenFrequency < 65
+    &&  50 <= blueFrequency && blueFrequency <= 66
     ) {
    billValue = 10;
    Serial.println("10 euro");
@@ -207,4 +210,39 @@ void printColors() {
  Serial.println();
 
  delay(2000);
+}
+
+void reset(){
+  total = 0;
+  detectedBill = 0;
+  start = 0;
+  redFrequency = 0;
+  greenFrequency = 0;
+  blueFrequency = 0;
+}
+
+void isr_btn(){
+//   int reading = digitalRead(Button);
+//    if (reading != lastButtonState) {
+//    ledState = !ledState;
+//    digitalWrite(LED, ledState);
+//    if (prescaler_val == 0) {
+//      TCCR1B = 0;
+//      TCCR1B |= (1 << WGM12);   // CTC mode
+//      TCCR1B |= (1 << CS10);
+//      prescaler_val +=1;
+//    }
+//    if (prescaler_val == 1) {
+//      TCCR1B = 0;
+//      TCCR1B |= (1 << WGM12);   // CTC mode
+//      TCCR1B |= (1 << CS11);
+//      prescaler_val +=1;
+//    }
+//    if (prescaler_val == 2) {
+//      TCCR1B = 0;
+//      TCCR1B |= (1 << WGM12);   // CTC mode
+//      TCCR1B |= (1 << CS12);
+//      prescaler_val = 0;
+//    }
+//   i=9;
 }
